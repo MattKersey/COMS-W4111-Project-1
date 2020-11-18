@@ -115,8 +115,8 @@ def unlike():
 
 def myRedirect(req):
     type = req.args.get("type")
+    sport = request.args.get("sport")
     if type == "games":
-        sport = request.args.get("sport")
         name1 = request.args.get('n1')
         location1 = request.args.get('l1')
         name2 = request.args.get('n2')
@@ -619,7 +619,7 @@ def specific_team(sport, name, loc):
 
     context = dict(sport=sport, team=team, comments=comments)
 
-    return render_template("teams.html", **context)
+    return render_template("team.html", **context)
 
 
 if __name__ == "__main__":
