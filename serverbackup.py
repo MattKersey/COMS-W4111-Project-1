@@ -133,7 +133,7 @@ def myRedirect(req):
             "&time=" + time
         )
     if type == "players":
-        id = request.args.get('id')
+        id = request.args.get('pid')
         return redirect("/" + sport + "/players/?id=" + id)
     if type == "teams":
         name = request.args.get('name')
@@ -410,7 +410,8 @@ def specific_player(sport, id):
         'dob': result['dob'],
         'height': result['height'],
         'weight': result['weight'],
-        'teams': []
+        'teams': [],
+        'games': []
     }
     cursor.close()
 
@@ -427,6 +428,35 @@ def specific_player(sport, id):
             'number': result['number'],
             'since': result['since'],
             'until': result['until']
+        })
+    cursor.close()
+
+    cursor = g.conn.execute(
+        "SELECT t.name, t.location, g.name1, g.location1, g.name2, "
+        "g.location2, g.date, g.time, g.winner_name, g.winner_location "
+        "FROM teammem_of_plays_for t, game_in g "
+        "WHERE t.id=%s AND "
+        "((t.name=g.name1 AND t.location=g.location1) OR "
+        "(t.name=g.name2 AND t.location=g.location2)) AND "
+        "t.since<g.date AND "
+        "t.until>g.date",
+        id
+    )
+    for result in cursor:
+        won = False
+        if (
+            result['name'] == result['winner_name'] and
+            result['location'] == result['winner_location']
+        ):
+            won = True
+        player['games'].append({
+            'name1': result['name1'],
+            'location1': result['location1'],
+            'name2': result['name2'],
+            'location2': result['location2'],
+            'date': result['date'],
+            'time': result['time'],
+            'won': won
         })
     cursor.close()
 
@@ -468,7 +498,7 @@ def specific_player(sport, id):
 
     context = dict(sport=sport, player=player, comments=comments)
 
-    return render_template("players.html", **context)
+    return render_template("player.html", **context)
 
 ################################################################################
 
