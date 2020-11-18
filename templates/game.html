@@ -16,7 +16,7 @@
         </div>
         <div class="row">
             <div class="col-md-4 pb-5 pt-2 {{ 'bg-success' if ((game['location1'] == game['winner_location']) and (game['name1'] == game['winner_name']))}}">
-                <h5 class="font-weight-light">{{ game['location1'] }} {{ game['name1'] }}</h5>
+                <a href="/{{ sport }}/teams/?name={{ game['name1'] }}&loc={{ game['location1'] }}"><h5 class="text-dark font-weight-light">{{ game['location1'] }} {{ game['name1'] }}</h5></a>
                 <ul class="list-group">
                     {% for player in players1 %}
                         <a class="list-group-item list-group-item-action" href="/{{ sport }}/players/?id={{ player['id'] }}">
@@ -26,7 +26,7 @@
                 </ul>
             </div>
             <div class="col-md-4 pb-5 pt-2 {{ 'bg-success' if ((game['location2'] == game['winner_location']) and (game['name2'] == game['winner_name']))}}">
-                <h5 class="font-weight-light">{{ game['location2'] }} {{ game['name2'] }}</h5>
+                <a href="/{{ sport }}/teams/?name={{ game['name1'] }}&loc={{ game['location1'] }}"><h5 class="text-dark font-weight-light">{{ game['location2'] }} {{ game['name2'] }}</h5></a>
                 <ul class="list-group">
                     {% for player in players2 %}
                         <a class="list-group-item list-group-item-action" href="/{{ sport }}/players/?id={{ player['id'] }}">
@@ -50,6 +50,15 @@
                             {% endif %}
                         </li>
                     {% endfor %}
+                    <li class="list-group-item">
+                        <form method="POST" action="/comments/new/?sport={{ sport }}&type=games&n1={{ game['name1'] }}&l1={{ game['location1'] }}&n2={{ game['name2'] }}&l2={{ game['location2'] }}&date={{ game['date'] }}&time={{ game['time'] }}">
+                            <div class="form-group">
+                                <input type="text" class="form-control" name="contents" required> 
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-block">Submit Comment</button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

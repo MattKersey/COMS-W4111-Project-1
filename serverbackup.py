@@ -1,6 +1,7 @@
 import os
 from sqlalchemy import create_engine
 from flask import Flask, request, render_template, g, redirect, session
+from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -35,7 +36,7 @@ def teardown_request(exception):
 
 @app.route('/', methods=['GET'])
 def login_screen():
-    if 'user' not in session:
+    if 'user' in session:
         return redirect('/basketball/games/')
     fail = False
     if request.args.get('fail') == "true":
@@ -100,7 +101,10 @@ def like():
     if 'user' not in session:
         return redirect('/')
     id = request.args.get('id')
-    g.conn.execute("INSERT INTO likes VALUES(%s, %s)", id, session['user']['email'])
+    try:
+        g.conn.execute("INSERT INTO likes VALUES(%s, %s)", id, session['user']['email'])
+    except Exception as e:
+        print(e)
     return myRedirect(request)
 
 
@@ -140,6 +144,89 @@ def myRedirect(req):
         loc = request.args.get('loc')
         return redirect("/" + sport + "/teams/?name=" + name + "&loc=" + loc)
     return redirect("/")
+
+
+@app.route('/comments/new/', methods=['POST'])
+def post_comment():
+    type = request.args.get('type')
+    if type is not None:
+        contents = request.form['contents']
+        cursor = g.conn.execute(
+            "SELECT c1.id "
+            "FROM comments_post c1 "
+            "GROUP BY c1.id "
+            "HAVING c1.id>=all(SELECT c2.id FROM comments_post c2)"
+        )
+        id = 0
+        results = cursor.fetchall()
+        if len(results) > 0:
+            result = results[0]
+            id = int(result['id']) + 1
+        today = datetime.now().strftime("%Y-%m-%d")
+        now = datetime.now().strftime("%H:%M:%S")
+
+        try:
+            g.conn.execute(
+                "INSERT INTO comments_post VALUES(%s, %s, %s, %s, %s)",
+                id,
+                today,
+                now,
+                contents,
+                session['user']['email']
+            )
+        except Exception as e:
+            print(e)
+
+        if type == "games":
+            name1 = request.args.get('n1')
+            location1 = request.args.get('l1')
+            name2 = request.args.get('n2')
+            location2 = request.args.get('l2')
+            date = request.args.get('date')
+            time = request.args.get('time')
+            try:
+                g.conn.execute(
+                    "INSERT INTO game_comment_appears_on "
+                    "VALUES(%s, %s, %s, %s, %s, %s, %s)",
+                    id,
+                    date,
+                    time,
+                    name1,
+                    name2,
+                    location1,
+                    location2
+                )
+            except Exception as e:
+                print(e)
+        if type == "players":
+            pid = request.args.get('pid')
+            try:
+                g.conn.execute(
+                    "INSERT INTO player_comment_appears_on "
+                    "VALUES(%s, %s)",
+                    id,
+                    pid
+                )
+            except Exception as e:
+                print(e)
+        if type == "teams":
+            name = request.args.get('name')
+            loc = request.args.get('loc')
+            try:
+                g.conn.execute(
+                    "INSERT INTO team_comment_appears_on "
+                    "VALUES(%s, %s, %s)",
+                    id,
+                    name,
+                    loc
+                )
+            except Exception as e:
+                print(e)
+        return myRedirect(request)
+    else:
+        # Bad req
+        ###########################################################################
+        pass
 
 #####################################################################
 

@@ -55,6 +55,15 @@
                             {% endif %}
                         </li>
                     {% endfor %}
+                    <li class="list-group-item">
+                        <form method="POST" action="/comments/new/?sport={{ sport }}&type=players&pid={{ player['id'] }}">
+                            <div class="form-group">
+                                <input type="text" class="form-control" name="contents" required> 
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-block">Submit Comment</button>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>
