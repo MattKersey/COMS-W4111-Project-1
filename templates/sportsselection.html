@@ -1,0 +1,49 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/user">User Interface</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle {{'active' if sport == 'Basketball'}}" href="#" id="basketballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Basketball
+                </a>
+                <div class="dropdown-menu" aria-labelledby="basketballDropdown">
+                    <a class="dropdown-item" href="/basketball/games/">Games</a>
+                    <a class="dropdown-item" href="/basketball/teams/">Teams</a>
+                    <a class="dropdown-item" href="/basketball/players/">Players</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle {{'active' if sport == 'Football'}}" href="#" id="footballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Football
+                </a>
+                <div class="dropdown-menu" aria-labelledby="footballDropdown">
+                    <a class="dropdown-item" href="/football/games/">Games</a>
+                    <a class="dropdown-item" href="/football/teams/">Teams</a>
+                    <a class="dropdown-item" href="/football/players/">Players</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle {{'active' if sport == 'Soccer'}}" href="#" id="soccerDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Soccer
+                </a>
+                <div class="dropdown-menu" aria-labelledby="soccerDropdown">
+                    <a class="dropdown-item" href="/soccer/games/">Games</a>
+                    <a class="dropdown-item" href="/soccer/teams/">Teams</a>
+                    <a class="dropdown-item" href="/soccer/players/">Players</a>
+                </div>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle {{'active' if sport == 'Baseball'}}" href="#" id="baseballDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Baseball
+                </a>
+                <div class="dropdown-menu" aria-labelledby="baseballDropdown">
+                    <a class="dropdown-item" href="/baseball/games/">Games</a>
+                    <a class="dropdown-item" href="/baseball/teams/">Teams</a>
+                    <a class="dropdown-item" href="/baseball/players/">Players</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>

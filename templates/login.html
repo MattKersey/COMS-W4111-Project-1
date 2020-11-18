@@ -1,33 +1,37 @@
-<html>
-    <style>
-        body{ 
-            font-size: 15pt;
-            font-family: arial;
-        }
-    </style>
-
-    
-
-
-    <body>
-    <h1>Login</h1>
-
-        <div>{{data}}</div>
-        
-        <div>
-            {% for n in data %}
-                <div>{{n}}</div>
-            {% endfor %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <title>Login</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col"></div>
+            <div class="col">
+                <h1 class="text-center">Login</h1>
+                {% if fail == True %}
+                    <div class="alert alert-danger" role="alert">
+                        Wrong username or password
+                    </div>
+                {% endif %}
+                <form method="POST" action="/login">
+                    <div class="form-group">
+                        <label for="name">Email:</label>
+                        <input type="text" class="form-control" name="email" required> 
+                    </div>
+                    <div class="form-group">
+                        <label for="pass">Password:</label>
+                        <input type="password" class="form-control" name="pass" required> 
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block">Login</button>
+                </form>
+            </div>
+            <div class="col"></div>
         </div>
-
-        <form method="POST" action="/add">
-            <p>Username: 
-                <input type="text" name="name"> 
-                <input type="submit" value="Add">
-            </p>
-      </form>
-
-      
-
-    </body>
+    </div>
+</body>
 </html>
