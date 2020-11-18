@@ -35,11 +35,20 @@ def teardown_request(exception):
 
 @app.route('/', methods=['GET'])
 def login_screen():
+    if 'user' not in session:
+        return redirect('/basketball/games/')
     fail = False
     if request.args.get('fail') == "true":
         fail = True
     context = dict(fail=fail)
     return render_template("login.html", **context)
+
+
+@app.route('/logout/', methods=['GET'])
+def logout():
+    if 'user' in session:
+        session.pop('user')
+    return redirect('/')
 
 
 @app.route('/login/', methods=['POST'])
@@ -62,16 +71,22 @@ def login():
 
 @app.route('/basketball/', methods=['GET'])
 def basketball():
+    if 'user' not in session:
+        return redirect('/')
     return redirect('/basketball/games/')
 
 
 @app.route('/football/', methods=['GET'])
 def football():
+    if 'user' not in session:
+        return redirect('/')
     return redirect('/football/games/')
 
 
 @app.route('/soccer/', methods=['GET'])
 def soccer():
+    if 'user' not in session:
+        return redirect('/')
     return redirect('/soccer/games/')
 
 
@@ -79,11 +94,60 @@ def soccer():
 def baseball():
     return redirect('/baseball/games/')
 
+
+@app.route('/comments/like/')
+def like():
+    if 'user' not in session:
+        return redirect('/')
+    id = request.args.get('id')
+    g.conn.execute("INSERT INTO likes VALUES(%s, %s)", id, session['user']['email'])
+    return myRedirect(request)
+
+
+@app.route('/comments/unlike/')
+def unlike():
+    if 'user' not in session:
+        return redirect('/')
+    id = request.args.get('id')
+    g.conn.execute("DELETE FROM likes WHERE id=%s AND email=%s", id, session['user']['email'])
+    return myRedirect(request)
+
+
+def myRedirect(req):
+    type = req.args.get("type")
+    if type == "games":
+        sport = request.args.get("sport")
+        name1 = request.args.get('n1')
+        location1 = request.args.get('l1')
+        name2 = request.args.get('n2')
+        location2 = request.args.get('l2')
+        date = request.args.get('date')
+        time = request.args.get('time')
+        return redirect(
+            "/" + sport +
+            "/games/?n1=" + name1 +
+            "&l1=" + location1 +
+            "&n2=" + name2 +
+            "&l2=" + location2 +
+            "&date=" + date +
+            "&time=" + time
+        )
+    if type == "players":
+        id = request.args.get('id')
+        return redirect("/" + sport + "/players/?id=" + id)
+    if type == "teams":
+        name = request.args.get('name')
+        loc = request.args.get('loc')
+        return redirect("/" + sport + "/teams/?name=" + name + "&loc=" + loc)
+    return redirect("/")
+
 #####################################################################
 
 
 @app.route('/<string:sport>/games/', methods=['GET'])
 def games(sport):
+    if 'user' not in session:
+        return redirect('/')
     sport = sport.lower().capitalize()
     name1 = request.args.get('n1')
     location1 = request.args.get('l1')
@@ -117,6 +181,8 @@ def games(sport):
 
 
 def all_games(sport):
+    if 'user' not in session:
+        return redirect('/')
     cursor = g.conn.execute(
         "SELECT * FROM game_in "
         "WHERE sport=%s "
@@ -285,13 +351,15 @@ def specific_game(sport, name1, location1, name2, location2, date, time):
         comments=comments
     )
 
-    return render_template("games.html", **context)
+    return render_template("game.html", **context)
 
 #########################################################################
 
 
 @app.route('/<sport>/players/', methods=['GET'])
 def players(sport):
+    if 'user' not in session:
+        return redirect('/')
     sport = sport.lower().capitalize()
     id = request.args.get('id')
     if id is None:
@@ -331,10 +399,11 @@ def specific_player(sport, id):
         sport,
         id
     )
-    if not cursor:
+    results = cursor.fetchall()
+    if len(results) == 0:
         print("Player not found")
         ###################################################################################
-    result = cursor[0]
+    result = results[0]
     player = {
         'id': result['id'],
         'name': result['name'],
@@ -406,6 +475,9 @@ def specific_player(sport, id):
 
 @app.route('/<sport>/teams/', methods=['GET'])
 def teams(sport):
+    print(session)
+    if 'user' not in session:
+        return redirect('/')
     sport = sport.lower().capitalize()
     name = request.args.get('name')
     loc = request.args.get('loc')
@@ -450,10 +522,11 @@ def specific_team(sport, name, loc):
         name,
         loc
     )
-    if not cursor:
+    results = cursor.fetchall()
+    if len(results) == 0:
         print("Team not found")
         ###################################################################################
-    result = cursor[0]
+    result = results[0]
     team = {
         'name': result['name'],
         'location': result['location'],
