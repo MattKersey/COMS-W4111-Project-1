@@ -7,8 +7,10 @@ load_dotenv()
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
 
-u = os.getenv("DBUSER")
-p = os.getenv("DBPASS")
+#u = os.getenv("DBUSER")
+#p = os.getenv("DBPASS")
+u = "wc2756"
+p = "0288"
 DATABASEURI = "postgresql://" + u + ":" + p + "@34.75.150.200/proj1part2"
 engine = create_engine(DATABASEURI)
 
@@ -30,6 +32,11 @@ def teardown_request(exception):
         g.conn.close()
     except Exception as e:
         print(e)
+
+@app.route('/')
+def login():
+    return render_template("login.html")
+
 
 
 @app.route('/<string:sport>/games')
@@ -148,6 +155,12 @@ def teams(sport):
 def specific_team(sport):
     pass
 
+#login
+@app.route('/add', methods=['POST'])
+def add():
+    name = request.form['name']
+    g.conn.execute('INSERT INTO test(name) VALUES (%s)', name)
+    return redirect('/')
 
 if __name__ == "__main__":
     import click
