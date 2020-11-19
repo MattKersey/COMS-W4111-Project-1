@@ -7,10 +7,8 @@
 To use, set up a virtual environment and activate it. You can install the requirements using `pip install -r requirements.txt`. You will also need to create a .env file. It only needs two lines:  
 
 ```plaintext
-
 DBUSER=<Username>  
 DBPASS=<Password>
-
 ```
 
 ### POSTGRES ACCOUNT
@@ -24,10 +22,13 @@ Please find our app at http://35.236.207.213:8111/
 ### PROPOSAL IMPLEMENTATION
 
 We implemented almost all parts of our proposal with two main exceptions:  
+
 **1. Profile Pictures**
-We did not add a column for profile pictures to our __users__ table in part 2. This combined with the complexity of implementing this from a frontend perspective encouraged us to focus on other features.
+We did not add a column for profile pictures to our __users__ table in part 2. This combined with the complexity of implementing this from a frontend perspective encouraged us to focus on other features.  
+
 **2. Reporting Comments**
 Again, we did not add a table for this in part 2, and we felt that the yield would be pretty minor from a user's perspective.  
+
 We were able to implement the rest of our proposal, including users being able to register, login, post comments, like comments, delete comments, and view games, players, and teams for our four sports. We additionally implemented the search bar functionality we mentioned, which is capable of returning game, player, and team pages in the same query.
 
 ### INTERESTING PAGES
