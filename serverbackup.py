@@ -54,6 +54,8 @@ def logout():
 
 @app.route('/login/', methods=['POST'])
 def login():
+    if 'user' in session:
+        return redirect('/basketball/games/')
     email = request.form['email']
     password = request.form['pass']
     cursor = g.conn.execute(
@@ -68,6 +70,76 @@ def login():
         session['user'] = {'email': email}
     cursor.close()
     return redirect('/basketball/games/')
+
+
+@app.route('/register/', methods=['GET', 'POST'])
+def register():
+    if 'user' in session:
+        return redirect('/basketball/games/')
+    if request.method == 'POST':
+        emailFlag = "false"
+        usernameFlag = "false"
+        phoneFlag = "false"
+        email = request.form['email']
+        username = request.form['username']
+        phone = request.form['phone']
+        bio = request.form['bio']
+        password = request.form['pass']
+
+        cursor = g.conn.execute(
+            "SELECT email FROM users WHERE email=%s", email
+        )
+        results = cursor.fetchall()
+        if len(results) != 0:
+            emailFlag = "true"
+        cursor.close()
+
+        cursor = g.conn.execute(
+            "SELECT email FROM users WHERE username=%s", username
+        )
+        results = cursor.fetchall()
+        if len(results) != 0:
+            usernameFlag = "true"
+        cursor.close()
+
+        cursor = g.conn.execute(
+            "SELECT email FROM users WHERE phone=%s", phone
+        )
+        results = cursor.fetchall()
+        if len(results) != 0:
+            phoneFlag = "true"
+        cursor.close()
+        if emailFlag == "true" or phoneFlag == "true" or usernameFlag == "true":
+            return redirect(
+                '/register/?email=' + emailFlag +
+                '&phone=' + phoneFlag +
+                '&username=' + usernameFlag
+            )
+        try:
+            g.conn.execute(
+                "INSERT INTO users VALUES(%s, %s, %s, %s, %s)",
+                email,
+                username,
+                password,
+                bio,
+                phone
+            )
+        except Exception as e:
+            print(e)
+
+        return redirect('/')
+    else:
+        emailFlag = False
+        if request.args.get('email') == "true":
+            emailFlag = True
+        usernameFlag = False
+        if request.args.get('username') == "true":
+            usernameFlag = True
+        phoneFlag = False
+        if request.args.get('phone') == "true":
+            phoneFlag = True
+        context = dict(email=emailFlag, username=usernameFlag, phone=phoneFlag)
+        return render_template("register.html", **context)
 
 
 @app.route('/basketball/', methods=['GET'])

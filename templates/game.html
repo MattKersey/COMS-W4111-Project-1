@@ -53,7 +53,7 @@
                     <li class="list-group-item">
                         <form method="POST" action="/comments/new/?sport={{ sport }}&type=games&n1={{ game['name1'] }}&l1={{ game['location1'] }}&n2={{ game['name2'] }}&l2={{ game['location2'] }}&date={{ game['date'] }}&time={{ game['time'] }}">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="contents" required> 
+                                <input type="text" class="form-control" name="contents" required maxlength="500"> 
                             </div>
                             
                             <button type="submit" class="btn btn-primary btn-block">Submit Comment</button>

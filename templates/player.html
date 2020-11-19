@@ -58,7 +58,7 @@
                     <li class="list-group-item">
                         <form method="POST" action="/comments/new/?sport={{ sport }}&type=players&pid={{ player['id'] }}">
                             <div class="form-group">
-                                <input type="text" class="form-control" name="contents" required> 
+                                <input type="text" class="form-control" name="contents" required maxlength="500"> 
                             </div>
                             
                             <button type="submit" class="btn btn-primary btn-block">Submit Comment</button>
