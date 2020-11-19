@@ -176,7 +176,7 @@ def userpage():
             g.conn.execute(
                 "DELETE FROM prefers WHERE email=%s AND name='Basketball'", session['user']['email']
             )
-        
+
         if (request.form.get('FootballPref') is not None):
             try:
                 g.conn.execute(
@@ -188,7 +188,7 @@ def userpage():
             g.conn.execute(
                 "DELETE FROM prefers WHERE email=%s AND name='Football'", session['user']['email']
             )
-        
+
         if (request.form.get('SoccerPref') is not None):
             try:
                 g.conn.execute(
@@ -200,7 +200,7 @@ def userpage():
             g.conn.execute(
                 "DELETE FROM prefers WHERE email=%s AND name='Soccer'", session['user']['email']
             )
-        
+
         if (request.form.get('BaseballPref') is not None):
             try:
                 g.conn.execute(
@@ -222,7 +222,7 @@ def userpage():
         cursor.close()
         if len(results) == 0:
             return redirect('/logout/')
-        
+
         cursor = g.conn.execute(
             "SELECT name AS sport FROM prefers WHERE email=%s",
             session['user']['email']
@@ -240,7 +240,7 @@ def userpage():
                 soccer = 'true'
             if result['sport'] == 'Baseball':
                 baseball = 'true'
-        
+
         context = dict(
             user=results[0],
             basketball=basketball,
@@ -430,8 +430,7 @@ def post_comment():
                 print(e)
         return myRedirect(request)
     else:
-        # Bad req
-        ###########################################################################
+        return redirect('/')
         pass
 
 
@@ -564,8 +563,7 @@ def games(sport):
     ):
         ##################################################################################
         # Invalid args
-        print("oop")
-        pass
+        return redirect('/')
     else:
         return specific_game(sport, name1, location1, name2, location2, date, time)
 
@@ -625,7 +623,7 @@ def specific_game(sport, name1, location1, name2, location2, date, time):
     results = cursor.fetchall()
     if len(results) == 0:
         print("Game not found")
-        ###################################################################################
+        return redirect('/')
     result = results[0]
     game = {
         'name1': result['name1'],
@@ -792,7 +790,7 @@ def specific_player(sport, id):
     results = cursor.fetchall()
     if len(results) == 0:
         print("Player not found")
-        ###################################################################################
+        return redirect('/')
     result = results[0]
     player = {
         'id': result['id'],
@@ -904,8 +902,7 @@ def teams(sport):
     if name is None and loc is None:
         return all_teams(sport)
     elif name is None or loc is None:
-        ###########################################################################
-        pass
+        return redirect('/')
     else:
         return specific_team(sport, name, loc)
 
@@ -945,7 +942,7 @@ def specific_team(sport, name, loc):
     results = cursor.fetchall()
     if len(results) == 0:
         print("Team not found")
-        ###################################################################################
+        return redirect('/')
     result = results[0]
     team = {
         'name': result['name'],
