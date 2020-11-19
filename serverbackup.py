@@ -439,7 +439,10 @@ def search():
     query = request.form['query']
     like_query = '%' + query.lower() + '%'
     cursor = g.conn.execute(
-        "SELECT DISTINCT p.id, p.name, p.sport "
+        "SELECT DISTINCT p.id, p.name, p.sport, "
+        "(SELECT COUNT(*) "
+        "FROM player_comment_appears_on pc "
+        "WHERE p.id=pc.player_id) AS count "
         "FROM players p, teammem_of_plays_for t "
         "WHERE LOWER(p.name) LIKE %s OR "
         "LOWER(p.sport) LIKE %s OR "
@@ -457,12 +460,17 @@ def search():
             "type": "player",
             "name": result["name"],
             "sport": result["sport"],
-            "id": result["id"]
+            "id": result["id"],
+            "count": int(result["count"])
         })
     cursor.close()
 
     cursor = g.conn.execute(
-        "SELECT DISTINCT t.name, t.location, t.sport "
+        "SELECT DISTINCT t.name, t.location, t.sport, "
+        "(SELECT COUNT(*) "
+        "FROM team_comment_appears_on tc "
+        "WHERE t.name=tc.name AND "
+        "t.location=tc.location) AS count "
         "FROM teams t, teammem_of_plays_for tm, players p "
         "WHERE LOWER(t.name) LIKE %s OR "
         "LOWER(t.location) LIKE %s OR "
@@ -481,12 +489,21 @@ def search():
             "type": "team",
             "name": result["name"],
             "location": result["location"],
-            "sport": result["sport"]
+            "sport": result["sport"],
+            "count": int(result["count"])
         })
     cursor.close()
 
     cursor = g.conn.execute(
-        "SELECT DISTINCT g.name1, g.location1, g.name2, g.location2, g.date, g.time, g.sport "
+        "SELECT DISTINCT g.name1, g.location1, g.name2, g.location2, g.date, g.time, g.sport, "
+        "(SELECT COUNT(*) "
+        "FROM game_comment_appears_on gc "
+        "WHERE gc.name1=g.name1 AND "
+        "gc.location1=g.location1 AND "
+        "gc.name2=g.name2 AND "
+        "gc.location2=g.location2 AND "
+        "gc.date=g.date AND "
+        "gc.time=g.time) AS count "
         "FROM game_in g, teammem_of_plays_for t, players p "
         "WHERE LOWER(g.name1) LIKE %s OR "
         "LOWER(g.location1) LIKE %s OR "
@@ -522,13 +539,20 @@ def search():
             "location2": result["location2"],
             "date": result["date"],
             "time": result["time"],
-            "sport": result["sport"]
+            "sport": result["sport"],
+            "count": int(result["count"])
         })
     cursor.close()
+
+    results.sort(key=sortResults, reverse=True)
 
     context = dict(results=results)
 
     return render_template("search.html", **context)
+
+
+def sortResults(val):
+    return val['count']
 
 #####################################################################
 
