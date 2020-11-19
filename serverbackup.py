@@ -142,6 +142,115 @@ def register():
         return render_template("register.html", **context)
 
 
+@app.route('/user/', methods=['GET', 'POST'])
+def userpage():
+    if 'user' not in session:
+        return redirect('/')
+    if request.method == 'POST':
+        if request.form['pass'] != '':
+            g.conn.execute(
+                "UPDATE users "
+                "SET bio=%s, password=%s "
+                "WHERE email=%s",
+                request.form['bio'],
+                request.form['pass'],
+                session['user']['email']
+            )
+        else:
+            g.conn.execute(
+                "UPDATE users "
+                "SET bio=%s "
+                "WHERE email=%s",
+                request.form['bio'],
+                session['user']['email']
+            )
+
+        if (request.form.get('BasketballPref') is not None):
+            try:
+                g.conn.execute(
+                    "INSERT INTO prefers VALUES(%s, 'Basketball')", session['user']['email']
+                )
+            except Exception as e:
+                print(e)
+        else:
+            g.conn.execute(
+                "DELETE FROM prefers WHERE email=%s AND name='Basketball'", session['user']['email']
+            )
+        
+        if (request.form.get('FootballPref') is not None):
+            try:
+                g.conn.execute(
+                    "INSERT INTO prefers VALUES(%s, 'Football')", session['user']['email']
+                )
+            except Exception as e:
+                print(e)
+        else:
+            g.conn.execute(
+                "DELETE FROM prefers WHERE email=%s AND name='Football'", session['user']['email']
+            )
+        
+        if (request.form.get('SoccerPref') is not None):
+            try:
+                g.conn.execute(
+                    "INSERT INTO prefers VALUES(%s, 'Soccer')", session['user']['email']
+                )
+            except Exception as e:
+                print(e)
+        else:
+            g.conn.execute(
+                "DELETE FROM prefers WHERE email=%s AND name='Soccer'", session['user']['email']
+            )
+        
+        if (request.form.get('BaseballPref') is not None):
+            try:
+                g.conn.execute(
+                    "INSERT INTO prefers VALUES(%s, 'Baseball')", session['user']['email']
+                )
+            except Exception as e:
+                print(e)
+        else:
+            g.conn.execute(
+                "DELETE FROM prefers WHERE email=%s AND name='Baseball'", session['user']['email']
+            )
+        return redirect('/user/')
+    else:
+        cursor = g.conn.execute(
+            "SELECT email, username, phone, bio FROM users WHERE email=%s",
+            session['user']['email']
+        )
+        results = cursor.fetchall()
+        cursor.close()
+        if len(results) == 0:
+            return redirect('/logout/')
+        
+        cursor = g.conn.execute(
+            "SELECT name AS sport FROM prefers WHERE email=%s",
+            session['user']['email']
+        )
+        basketball = ''
+        football = ''
+        soccer = ''
+        baseball = ''
+        for result in cursor:
+            if result['sport'] == 'Basketball':
+                basketball = 'true'
+            if result['sport'] == 'Football':
+                football = 'true'
+            if result['sport'] == 'Soccer':
+                soccer = 'true'
+            if result['sport'] == 'Baseball':
+                baseball = 'true'
+        
+        context = dict(
+            user=results[0],
+            basketball=basketball,
+            football=football,
+            soccer=soccer,
+            baseball=baseball
+        )
+        return render_template('user.html', **context)
+
+
 @app.route('/basketball/', methods=['GET'])
 def basketball():
     if 'user' not in session:
@@ -177,6 +286,7 @@ def like():
         g.conn.execute("INSERT INTO likes VALUES(%s, %s)", id, session['user']['email'])
     except Exception as e:
         print(e)
+        return myRedirect(request)
     return myRedirect(request)
 
 
@@ -186,6 +296,30 @@ def unlike():
         return redirect('/')
     id = request.args.get('id')
     g.conn.execute("DELETE FROM likes WHERE id=%s AND email=%s", id, session['user']['email'])
+    return myRedirect(request)
+
+
+@app.route('/comments/delete/')
+def delete():
+    if 'user' not in session:
+        return redirect('/')
+    id = request.args.get('id')
+    cursor = g.conn.execute(
+        "SELECT id FROM comments_post WHERE id=%s AND email=%s",
+        id,
+        session['user']['email']
+    )
+    results = cursor.fetchall()
+    cursor.close()
+    if len(results) == 0:
+        return myRedirect(request)
+
+    g.conn.execute("DELETE FROM game_comment_appears_on WHERE id=%s", id)
+    g.conn.execute("DELETE FROM player_comment_appears_on WHERE comment_id=%s", id)
+    g.conn.execute("DELETE FROM team_comment_appears_on WHERE id=%s", id)
+    g.conn.execute("DELETE FROM likes WHERE id=%s", id)
+    g.conn.execute("DELETE FROM comments_post WHERE id=%s", id)
+
     return myRedirect(request)
 
 
@@ -299,6 +433,103 @@ def post_comment():
         # Bad req
         ###########################################################################
         pass
+
+
+@app.route('/search/', methods=['POST'])
+def search():
+    query = request.form['query']
+    like_query = '%' + query.lower() + '%'
+    cursor = g.conn.execute(
+        "SELECT DISTINCT p.id, p.name, p.sport "
+        "FROM players p, teammem_of_plays_for t "
+        "WHERE LOWER(p.name) LIKE %s OR "
+        "LOWER(p.sport) LIKE %s OR "
+        "(t.id = p.id AND "
+        "(LOWER(t.name) LIKE %s OR "
+        "LOWER(t.location) LIKE %s))",
+        like_query,
+        like_query,
+        like_query,
+        like_query
+    )
+    results = []
+    for result in cursor:
+        results.append({
+            "type": "player",
+            "name": result["name"],
+            "sport": result["sport"],
+            "id": result["id"]
+        })
+    cursor.close()
+
+    cursor = g.conn.execute(
+        "SELECT DISTINCT t.name, t.location, t.sport "
+        "FROM teams t, teammem_of_plays_for tm, players p "
+        "WHERE LOWER(t.name) LIKE %s OR "
+        "LOWER(t.location) LIKE %s OR "
+        "LOWER(t.sport) LIKE %s OR "
+        "(t.name=tm.name AND "
+        "t.location=tm.location AND "
+        "p.id=tm.id AND "
+        "(LOWER(p.name) LIKE %s))",
+        like_query,
+        like_query,
+        like_query,
+        like_query
+    )
+    for result in cursor:
+        results.append({
+            "type": "team",
+            "name": result["name"],
+            "location": result["location"],
+            "sport": result["sport"]
+        })
+    cursor.close()
+
+    cursor = g.conn.execute(
+        "SELECT DISTINCT g.name1, g.location1, g.name2, g.location2, g.date, g.time, g.sport "
+        "FROM game_in g, teammem_of_plays_for t, players p "
+        "WHERE LOWER(g.name1) LIKE %s OR "
+        "LOWER(g.location1) LIKE %s OR "
+        "LOWER(g.name2) LIKE %s OR "
+        "LOWER(g.location2) LIKE %s OR "
+        "LOWER(g.sport) LIKE %s OR "
+        "(g.name1=t.name AND "
+        "g.location1=t.location AND "
+        "t.id=p.id AND "
+        "t.since<g.date AND "
+        "t.until>g.date AND "
+        "(LOWER(p.name) LIKE %s)) OR "
+        "(g.name2=t.name AND "
+        "g.location2=t.location AND "
+        "t.id=p.id AND "
+        "t.since<g.date AND "
+        "t.until>g.date AND "
+        "(LOWER(p.name) LIKE %s))",
+        like_query,
+        like_query,
+        like_query,
+        like_query,
+        like_query,
+        like_query,
+        like_query
+    )
+    for result in cursor:
+        results.append({
+            "type": "game",
+            "name1": result["name1"],
+            "location1": result["location1"],
+            "name2": result["name2"],
+            "location2": result["location2"],
+            "date": result["date"],
+            "time": result["time"],
+            "sport": result["sport"]
+        })
+    cursor.close()
+
+    context = dict(results=results)
+
+    return render_template("search.html", **context)
 
 #####################################################################
 

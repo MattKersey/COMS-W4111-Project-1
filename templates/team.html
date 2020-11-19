@@ -45,11 +45,14 @@
                             <h6>{{ comment['email'] }}</h6>
                             <h6><span class="font-weight-light">{{ comment['time'] }} on {{ comment['date'] }}</span></h6>
                             <p>{{ comment['contents'] }}</p>
-                            <p class="float-left">{{ comment['likes']|length }} likes</p>
+                            <p class="float-left pt-1">{{ comment['likes']|length }} likes</p>
+                            {% if comment['mine'] %}
+                                <a class="float-right btn btn-outline-danger btn-sm ml-2" href="/comments/delete/?id={{ comment['id'] }}&sport={{ sport }}&type=teams&name={{ team['name'] }}&loc={{ team['location'] }}">delete</a>
+                            {% endif %}
                             {% if comment['liked'] == True %}
-                                <a class="float-right" href="/comments/unlike/?id={{ comment['id'] }}&sport={{ sport }}&type=teams&name={{ team['name'] }}&loc={{ team['location'] }}"><p>unlike</p></a>
+                                <a class="float-right pt-1" href="/comments/unlike/?id={{ comment['id'] }}&sport={{ sport }}&type=teams&name={{ team['name'] }}&loc={{ team['location'] }}"><p>unlike</p></a>
                             {% else %}
-                                <a class="float-right" href="/comments/like/?id={{ comment['id'] }}&sport={{ sport }}&type=teams&name={{ team['name'] }}&loc={{ team['location'] }}"><p>like</p></a>
+                                <a class="float-right pt-1" href="/comments/like/?id={{ comment['id'] }}&sport={{ sport }}&type=teams&name={{ team['name'] }}&loc={{ team['location'] }}"><p>like</p></a>
                             {% endif %}
                         </li>
                     {% endfor %}
